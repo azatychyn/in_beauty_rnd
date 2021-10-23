@@ -1,0 +1,42 @@
+<h1>Show Stock</h1>
+
+<%= if @live_action in [:edit] do %>
+  <%= live_modal InBeautyWeb.StockLive.FormComponent,
+    id: @stock.id,
+    title: @page_title,
+    action: @live_action,
+    stock: @stock,
+    return_to: Routes.stock_show_path(@socket, :show, @stock) %>
+<% end %>
+
+<ul>
+
+  <li>
+    <strong>Image path:</strong>
+    <%= @stock.image_path %>
+  </li>
+
+  <li>
+    <strong>Price:</strong>
+    <%= @stock.price %>
+  </li>
+
+  <li>
+    <strong>Quantity:</strong>
+    <%= @stock.quantity %>
+  </li>
+
+  <li>
+    <strong>Volume:</strong>
+    <%= @stock.volume %>
+  </li>
+
+  <li>
+    <strong>Weight:</strong>
+    <%= @stock.weight %>
+  </li>
+
+</ul>
+
+<span><%= live_patch "Edit", to: Routes.stock_show_path(@socket, :edit, @stock), class: "button" %></span> |
+<span><%= live_redirect "Back", to: Routes.stock_index_path(@socket, :index) %></span>

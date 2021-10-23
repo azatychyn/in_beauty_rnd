@@ -1,0 +1,37 @@
+<h1>Show Perfume</h1>
+
+<%= if @live_action in [:edit] do %>
+  <%= live_modal InBeautyWeb.PerfumeLive.FormComponent,
+    id: @perfume.id,
+    title: @page_title,
+    action: @live_action,
+    perfume: @perfume,
+    return_to: Routes.perfume_show_path(@socket, :show, @perfume) %>
+<% end %>
+
+<ul>
+
+  <li>
+    <strong>Description:</strong>
+    <%= @perfume.description %>
+  </li>
+
+  <li>
+    <strong>Gender:</strong>
+    <%= @perfume.gender %>
+  </li>
+
+  <li>
+    <strong>Name:</strong>
+    <%= @perfume.name %>
+  </li>
+
+  <li>
+    <strong>Manufacturer:</strong>
+    <%= @perfume.manufacturer %>
+  </li>
+
+</ul>
+
+<span><%= live_patch "Edit", to: Routes.perfume_show_path(@socket, :edit, @perfume), class: "button" %></span> |
+<span><%= live_redirect "Back", to: Routes.perfume_index_path(@socket, :index) %></span>

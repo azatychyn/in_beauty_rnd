@@ -1,0 +1,43 @@
+<h1>Listing Stocks</h1>
+
+<%= if @live_action in [:new, :edit] do %>
+  <%= live_modal InBeautyWeb.StockLive.FormComponent,
+    id: @stock.id || :new,
+    title: @page_title,
+    action: @live_action,
+    stock: @stock,
+    return_to: Routes.stock_index_path(@socket, :index) %>
+<% end %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Image path</th>
+      <th>Price</th>
+      <th>Quantity</th>
+      <th>Volume</th>
+      <th>Weight</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="stocks">
+    <%= for stock <- @stocks do %>
+      <tr id={"stock-#{stock.id}"}>
+        <td><%= stock.image_path %></td>
+        <td><%= stock.price %></td>
+        <td><%= stock.quantity %></td>
+        <td><%= stock.volume %></td>
+        <td><%= stock.weight %></td>
+
+        <td>
+          <span><%= live_redirect "Show", to: Routes.stock_show_path(@socket, :show, stock) %></span>
+          <span><%= live_patch "Edit", to: Routes.stock_index_path(@socket, :edit, stock) %></span>
+          <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: stock.id, data: [confirm: "Are you sure?"] %></span>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<span><%= live_patch "New Stock", to: Routes.stock_index_path(@socket, :new) %></span>

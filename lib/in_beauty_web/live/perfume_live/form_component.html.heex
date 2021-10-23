@@ -1,0 +1,32 @@
+<div>
+  <h2><%= @title %></h2>
+
+  <.form
+    let={f}
+    for={@changeset}
+    id="perfume-form"
+    phx-target={@myself}
+    phx-change="validate"
+    phx-submit="save">
+  
+    <%= label f, :description %>
+    <%= text_input f, :description %>
+    <%= error_tag f, :description %>
+  
+    <%= label f, :gender %>
+    <%= text_input f, :gender %>
+    <%= error_tag f, :gender %>
+  
+    <%= label f, :name %>
+    <%= text_input f, :name %>
+    <%= error_tag f, :name %>
+  
+    <%= label f, :manufacturer %>
+    <%= text_input f, :manufacturer %>
+    <%= error_tag f, :manufacturer %>
+  
+    <div>
+      <%= submit "Save", phx_disable_with: "Saving..." %>
+    </div>
+  </.form>
+</div>
