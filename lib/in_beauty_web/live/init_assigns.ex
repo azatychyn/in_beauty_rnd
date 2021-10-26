@@ -10,7 +10,7 @@ defmodule InBeautyWeb.InitAssigns do
 
   def on_mount(:default, params, _session, socket) do
     IO.inspect("i am in default init assign")
-    {:cont, assign(socket, :page_title, "DemoWeb")}
+    {:cont, socket}
   end
 
   def on_mount(:admin, _params, _session, socket) do

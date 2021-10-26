@@ -1,5 +1,6 @@
 defmodule InBeautyWeb.LiveHelpers do
   import Phoenix.LiveView.Helpers
+  alias InBeautyWeb.Router.Helpers, as: Routes
 
   @doc """
   Renders a component inside the `InBeautyWeb.ModalComponent` component.
@@ -19,5 +20,22 @@ defmodule InBeautyWeb.LiveHelpers do
     path = Keyword.fetch!(opts, :return_to)
     modal_opts = [id: :modal, return_to: path, component: component, opts: opts]
     live_component(InBeautyWeb.ModalComponent, modal_opts)
+  end
+
+  @doc """
+  Renders a svg from sprite.svg file&
+
+  ## Examples
+    <%= icon_tag("cart", class: classes) %>
+  """
+  def icon_tag(name, opts \\ []) do
+    classes = Keyword.get(opts, :class, "")
+
+    Phoenix.HTML.Tag.content_tag :svg, opts do
+      Phoenix.HTML.Tag.tag(
+        :use,
+        "xlink:href": Routes.static_path(InBeautyWeb.Endpoint, "/icons/sprite.svg#" <> name)
+      )
+    end
   end
 end
