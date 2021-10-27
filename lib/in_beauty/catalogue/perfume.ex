@@ -26,8 +26,8 @@ defmodule InBeauty.Catalogue.Perfume do
     |> maybe_cast_stocks(stocks)
   end
 
+  defp maybe_cast_stocks(changeset, nil), do: changeset
+
   defp maybe_cast_stocks(changeset, stocks),
     do: cast_assoc(changeset, :stocks, with: &Stock.changeset/2)
-
-  defp maybe_cast_stocks(changeset, _), do: changeset
 end

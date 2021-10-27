@@ -50,7 +50,8 @@ defmodule InBeauty.MixProject do
       {:gettext, "~> 0.18"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
-      {:scrivener_ecto, "~> 2.7"}
+      {:scrivener_ecto, "~> 2.7"},
+      {:ex_machina, "~> 2.7.0", only: [:test]}
     ]
   end
 

@@ -19,7 +19,9 @@ defmodule InBeauty.Catalogue do
 
   """
   def list_perfumes do
-    Repo.all(Perfume)
+    Perfume
+    |> preload([:stocks])
+    |> Repo.all()
   end
 
   @doc """
@@ -32,7 +34,6 @@ defmodule InBeauty.Catalogue do
 
   """
   def list_perfumes(params) when is_map(params) do
-    # TODO stock in list stock function    
     Perfume
     |> join(:left, [p], s in Stock, on: s.perfume_id == p.id)
     |> preload([p, s], stocks: s)
@@ -59,7 +60,11 @@ defmodule InBeauty.Catalogue do
       ** (Ecto.NoResultsError)
 
   """
-  def get_perfume!(id), do: Repo.get!(Perfume, id)
+  def get_perfume!(id) do
+    Perfume
+    |> preload([:stocks])
+    |> Repo.get!(id)
+  end
 
   @doc """
   Creates a perfume.
@@ -93,6 +98,7 @@ defmodule InBeauty.Catalogue do
   """
   def update_perfume(%Perfume{} = perfume, attrs) do
     perfume
+    |> Repo.preload([:stocks])
     |> Perfume.changeset(attrs)
     |> Repo.update()
   end
@@ -152,9 +158,7 @@ defmodule InBeauty.Catalogue do
     where(query, [p, s], s.volume in ^volumes)
   end
 
-  defp filter_volumes(query, _) do
-    query
-  end
+  defp filter_volumes(query, _), do: query
 
   defp filter_price(query, %{price: [min, max]}) do
     min = String.to_integer(min)
@@ -163,33 +167,26 @@ defmodule InBeauty.Catalogue do
     where(query, [_p, s], s.price >= ^min and s.price <= ^max)
   end
 
-  defp filter_price(query, _) do
-    query
-  end
+  defp filter_price(query, _), do: query
 
   defp filter_genders(query, %{genders: genders})
        when genders not in [[""], [], ""] do
-    where(query, [q], q.gender in ^genders)
+    gender_enums = Ecto.Enum.dump_values(Perfume, :gender)
+    gender_enums_atoms = Ecto.Enum.values(Perfume, :gender)
+    filtered_genders = Enum.filter(genders, &(&1 in (gender_enums_atoms ++ gender_enums)))
+    where(query, [q], q.gender in ^filtered_genders)
   end
 
-  defp filter_genders(query, _) do
-    query
-  end
+  defp filter_genders(query, _), do: query
 
   defp filter_manufacturers(query, %{manufacturers: manufacturers})
-       when manufacturers not in [[""], [], ""] do
-    where(query, [q], q.manufacturer in ^manufacturers)
-  end
+       when manufacturers not in [[""], [], ""],
+       do: where(query, [q], q.manufacturer in ^manufacturers)
 
-  defp filter_manufacturers(query, _) do
-    query
-  end
+  defp filter_manufacturers(query, _), do: query
 
-  defp sort(query, %{sort: %{sort_by: sort_by, sort_order: sort_order}}) do
-    order_by(query, [{^sort_order, ^sort_by}])
-  end
+  defp sort(query, %{sort: %{sort_by: sort_by, sort_order: sort_order}}),
+    do: order_by(query, [{^sort_order, ^sort_by}])
 
-  defp sort(query, _) do
-    query
-  end
+  defp sort(query, _), do: query
 end
