@@ -15,8 +15,8 @@ defmodule InBeautyWeb.StockLiveTest do
   }
   @invalid_attrs %{image_path: nil, price: nil, quantity: nil, volume: nil, weight: nil}
 
-  setup_all do
-    {:ok, [stock: insert(:stock)]}
+  setup do
+    {:ok, %{stock: insert(:stock)}}
   end
 
   describe "Index" do

@@ -12,22 +12,14 @@ defmodule InBeauty.Catalogue.Perfume do
     field :manufacturer, :string
     field :name, :string
 
-    has_many :stocks, Stock
+    has_many :stocks, Stock, on_delete: :delete_all
     timestamps()
   end
 
   @doc false
   def changeset(perfume, attrs) do
-    stocks = attrs[:stocks] || attrs["stocks"]
-
     perfume
     |> cast(attrs, @fields)
     |> validate_required(@fields)
-    |> maybe_cast_stocks(stocks)
   end
-
-  defp maybe_cast_stocks(changeset, nil), do: changeset
-
-  defp maybe_cast_stocks(changeset, stocks),
-    do: cast_assoc(changeset, :stocks, with: &Stock.changeset/2)
 end

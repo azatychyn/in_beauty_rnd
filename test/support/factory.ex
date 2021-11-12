@@ -30,9 +30,9 @@ defmodule InBeautyWeb.Factory do
   def stock_factory do
     %Stock{
       image_path: sequence(:image_path, &"some_#{&1}image_path"),
-      price: sequence(:price, &(&1 + 1)),
+      price: 50,
       quantity: sequence(:quantity, &(&1 + 1)),
-      volume: sequence(:volume, &(&1 + 1)),
+      volume: 30,
       weight: sequence(:weight, &(&1 + 1))
     }
   end

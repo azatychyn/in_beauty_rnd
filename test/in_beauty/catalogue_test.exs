@@ -2,9 +2,9 @@ defmodule InBeauty.CatalogueTest do
   use InBeauty.DataCase
 
   import InBeautyWeb.Factory,
-    only: [build: 1, insert_list: 3, insert_pair: 2, insert: 1, params_for: 1]
+    only: [build: 1, insert: 1, insert: 2, params_for: 1, build_list: 3]
 
-  alias InBeauty.Catalogue
+  alias InBeauty.{Catalogue, Stocks}
   alias InBeauty.Catalogue.Perfume
 
   @invalid_attrs %{description: nil, gender: nil, manufacturer: nil, name: nil}
@@ -50,9 +50,13 @@ defmodule InBeauty.CatalogueTest do
       assert perfume == Catalogue.get_perfume!(perfume.id)
     end
 
-    test "delete_perfume/1 deletes the perfume", %{perfume: perfume} do
+    test "delete_perfume/1 deletes the perfume with all child stocks", %{perfume: perfume} do
       assert {:ok, %Perfume{}} = Catalogue.delete_perfume(perfume)
       assert_raise Ecto.NoResultsError, fn -> Catalogue.get_perfume!(perfume.id) end
+
+      for stock <- perfume.stocks do
+        assert_raise Ecto.NoResultsError, fn -> Stocks.get_stock!(stock.id) end
+      end
     end
 
     test "change_perfume/1 returns a perfume changeset", %{perfume: perfume} do
@@ -64,13 +68,13 @@ defmodule InBeauty.CatalogueTest do
     setup [:create_perfumes]
 
     test "list_perfumes/1 returns filtered perfumes by manufacturers" do
-      assert 4 ==
+      assert 2 ==
                %{manufacturers: ["Apple"]}
                |> Catalogue.list_perfumes()
                |> Map.get(:entries)
                |> length()
 
-      assert 6 ==
+      assert 3 ==
                %{manufacturers: ["Apple", "Arfashor"]}
                |> Catalogue.list_perfumes()
                |> Map.get(:entries)
@@ -86,13 +90,13 @@ defmodule InBeauty.CatalogueTest do
     end
 
     test "list_perfumes/1 returns filtered perfumes by genders" do
-      assert 4 ==
+      assert 3 ==
                %{genders: ["men"]}
                |> Catalogue.list_perfumes()
                |> Map.get(:entries)
                |> length()
 
-      assert 6 ==
+      assert 4 ==
                %{genders: ["men", "unisex"]}
                |> Catalogue.list_perfumes()
                |> Map.get(:entries)
@@ -106,13 +110,42 @@ defmodule InBeauty.CatalogueTest do
                |> Map.get(:entries)
                |> length()
     end
+
+    test "list_perfumes/1 returns error on filtering perfumes by prices" do
+      assert 3 ==
+               %{price: ["0", "250"]}
+               |> Catalogue.list_perfumes()
+               |> Map.get(:entries)
+               |> length()
+    end
+
+    test "list_perfumes/1 returns error on filtering perfumes by volumes" do
+      assert 2 ==
+               %{volumes: ["20", "100"]}
+               |> Catalogue.list_perfumes()
+               |> Map.get(:entries)
+               |> length()
+    end
   end
 
   defp create_perfumes(_) do
-    insert_pair(:perfume, gender: :men, manufacturer: "some_manufactorer", stocks: [])
-    insert_pair(:perfume, gender: :women, manufacturer: "Apple", stocks: [])
-    insert_pair(:perfume, gender: :men, manufacturer: "Apple", stocks: [])
-    insert_pair(:perfume, gender: :unisex, manufacturer: "Arfashor", stocks: [build(:stock)])
+    insert(:perfume, gender: :men, manufacturer: "some_manufactorer", stocks: [])
+    insert(:perfume, gender: :women, manufacturer: "Apple", stocks: [])
+    insert(:perfume, gender: :men, manufacturer: "Apple", stocks: [])
+    insert(:perfume, gender: :unisex, manufacturer: "Arfashor", stocks: [build(:stock)])
+
+    insert(:perfume,
+      gender: :men,
+      manufacturer: "Daz",
+      stocks: build_list(3, :stock, price: 150, volume: 20)
+    )
+
+    insert(:perfume,
+      gender: :women,
+      manufacturer: "Daz",
+      stocks: build_list(3, :stock, price: 250, volume: 100)
+    )
+
     %{}
   end
 end

@@ -9,20 +9,23 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
-Enum.map(1..1000, fn i ->
+
+1..10000
+|> Enum.map(fn i ->
   InBeauty.Catalogue.create_perfume(%{
     description: "some desc#{i}",
     name: "some_name#{i}",
     gender: Enum.random(["men", "women", "unisex"]),
-    manufacturer: "some manufacturer",
-    stocks: [
-      %{
-        price: Enum.random(1..1000),
-        volume: Enum.random([30, 30, 40, 50, 100, 200]),
-        quantity: 100,
-        image_path: "https://picsum.photos/200/200",
-        weight: 100
-      }
-    ]
+    manufacturer: "some manufacturer"
+  })
+end)
+|> Enum.map(fn {:ok, perfume} ->
+  InBeauty.Stocks.create_stock(%{
+    price: Enum.random(1..1000),
+    volume: Enum.random([30, 30, 40, 50, 100, 200]),
+    quantity: 100,
+    image_path: "https://picsum.photos/200/200",
+    weight: 100,
+    perfume_id: perfume.id
   })
 end)

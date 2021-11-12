@@ -4,11 +4,7 @@ defmodule InBeautyWeb.InitAssigns do
   """
   import Phoenix.LiveView
 
-  @genders_variants ["men", "women", "unisex"]
-  @pages_variants ["20", "40"]
-  @default_page_size "20"
-
-  def on_mount(:default, params, _session, socket) do
+  def on_mount(:default, _params, _session, socket) do
     IO.inspect("i am in default init assign")
     {:cont, socket}
   end

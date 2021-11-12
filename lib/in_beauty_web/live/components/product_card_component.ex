@@ -56,7 +56,7 @@ defmodule InBeautyWeb.ProductCardComponent do
       <% end %>
       <div class="flex flex-col items-center w-full sm:w-64 h-auto bg-rose-100 dark:bg-opacity-90 py-1 xs:py-4">
         <%= Phoenix.HTML.Link.link @product.name, to: Routes.perfume_show_path(InBeautyWeb.Endpoint, :show, @product.id), class: "w-10/12 text-center tracking-widest font-bold text-denim-500 overflow-y-scroll text-base xs:text-lg sm:mb-2 ", target: "_blank", rel: "noopener noreferrer"  %>          
-        <p class="w-max text-denim-500 text-base">$129</p>
+        <p class="w-max text-denim-500 text-base"><%= extract_price(@product.stocks) %></p>
       </div>
       <div class="flex w-full relative">
         <div class="absolute bg-rose-100 dark:bg-opacity-90 rounded-b-2xl h-1/2 w-full -z-10 top-0">
@@ -70,7 +70,10 @@ defmodule InBeautyWeb.ProductCardComponent do
     """
   end
 
-  defp extract_image([stock | stocks]) do
+  defp extract_image([stock | _stocks]) do
     stock.image_path
   end
+
+  defp extract_price([]), do: 0
+  defp extract_price(stocks), do: Enum.min_by(stocks, & &1.price).price
 end

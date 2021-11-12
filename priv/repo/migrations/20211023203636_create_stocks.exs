@@ -10,7 +10,7 @@ defmodule InBeauty.Repo.Migrations.CreateStocks do
       add :volume, :integer, null: false
       add :weight, :integer, null: false
 
-      add :perfume_id, references(:perfumes, type: :binary_id)
+      add :perfume_id, references(:perfumes, type: :binary_id, on_delete: :delete_all)
 
       timestamps()
     end

@@ -1,51 +1,81 @@
-<article>
-	<h1 class="w-max text-gray-700 dark:text-rose-300 text-2xl font-bold mx-auto pt-6"><%= gettext("All Products") %></h1>
+<InBeautyWeb.JsModalComponent.render id="filters" label="Filters">
+	<%= live_component InBeautyWeb.Forms.ProductFilterFormComponent,
+			[
+				id: :filters,
+				filter_options: %{@filter_options | page: 1},
+				perfumes_count: @perfumes_count,
+				genders_variants: @genders_variants,
+				volumes_variants: @volumes_variants,
+				manufacturers_variants: @manufacturers_variants,
+				return_to: Routes.perfume_index_path(@socket, :index, @filter_options),
+				return_path: @return_path,
+				device: :desktop
+			]
+	%>
+</InBeautyWeb.JsModalComponent.render>
+
+<article >
+	<h1 class="dark:text-rose-300 text-2xl font-bold text-center pt-6"><%= gettext("All Products") %></h1>
 
 	<!-- filtering -->
-	<form phx-change="sort" class="flex my-6 md:my-12 w-11/12 mx-auto">
-		<div class="w-20 md:w-80 h-20 md:h-28 mr-4 bg-white dark:bg-midnight-500 border-2 border-rose-300 rounded-2xl relative">
-			<%= live_patch gettext("Filters"),
-						to: Routes.perfume_index_path(@socket, :filters, @filter_options),
-						class: "flex items-center justify-center w-full h-full text-xl text-gray-500 dark:text-gray-400 break-all" %>
-		</div>
-	</form>
+	<div>			
+		<p 
+			phx-click={show_modal("filters")}
+			class="inline-block text-xl text-center dark:text-gray-400 p-8 md:p-10 dark:bg-midnight-500 border-2 border-rose-300 rounded-2xl"
+			>
+			<%= gettext("Filters") %>
+		</p>	
+	<form phx-change="sort" class="inline-block">
+			<InBeautyWeb.UI.select
+				selected_variant={@filter_options.page_size} 
+				placeholder={gettext("Page Size")} 
+				variants={@pages_variants}
+				field={"page_size"}
+				wrapper_size={"ml-4"}
+			/>	
+		</form>
+	</div>
 	<!-- filtering -->
-	<article id="perfumes" class="mx-auto w-full sm:w-11/12">
-		<section class="flex flex-wrap mt-6">
-			<%= for {filter_group, selected_filter} <- all_selected_filters(@filter_options) do %>
-				<p class="flex p-6 m-1 bg-gradient-to-r from-rose-100 to-rose-200 dark:border-rose-300 rounded-2xl text-xl text-center whitespace-nowrap cursor-pointer">
+
+
+	<ul class="mt-6">
+		<%= for {filter_group, selected_filter} <- all_selected_filters(@filter_options) do %>			
+			<li class="inline-flex items-center justify-center p-6 bg-gradient-to-r from-rose-100 to-rose-200 dark:border-rose-300 rounded-2xl text-xl text-center whitespace-nowrap cursor-pointer">
+				<p class="">
 					<%= selected_filter %>
-					<a
-						class="flex items-center justify-center font-bold pl-4 text-4xl h-6 leading-3"
-						phx-click="remove_filter"
-						phx-value-filter_group="{{ filter_group }}"
-						phx-value-filter="{{ selected_filter }}"
-					>
-						&times;
-					</a>
 				</p>
-			<% end %>
-		</section>
-		<%= for i <- 1..@max_page do %>		
+				<a
+					class="ml-1"
+					phx-click="remove_filter"
+					phx-value-filter_group={filter_group}
+					phx-value-filter={selected_filter}
+				>					
+					<%= icon_tag("x", class: "w-7 h-7") %> 
+				</a>
+			</li>
+		<% end %>
+	</ul>	
+	
+	<article id="perfumes">			
+		<%= for page <- @pages do %>				
 			<InBeautyWeb.ProductPageComponent.render_page				
-				page={"page_#{i}"},
-				product={@pages[:"page_#{i}"]},
+				page={page},
 				page_size={@filter_options.page_size}
 			/>		
-		<% end %>
+			<% end %>			
 	</article>
 
-	<%= if (load_more?(@filter_options.page, @total_pages) && connected?(@socket)) do
+	<%= if (load_more?(@filter_options.page, 500) && connected?(@socket)) do
 				live_patch("Load More",
 					to:
 						Routes.perfume_index_path(
 							@socket,
-							:index,
-							Map.to_list(Map.put(@filter_options, :page, Enum.max(@loaded_pages) + 1))
+							:index,							
+							update_in(@filter_options[:page], &(&1 + 1))
 						),
-						class: "block mt-12 mx-auto sm:w-full uppercase max-w-xs p-4 xs:px-12 sm:px-6 md:px-8 xs:py-6 md:py-8 text-3xl dark:text-rose-100 font-bold bg-rose-100 hover:bg-rose-200 rounded-2xl dark:bg-denim-400 cursor-pointer text-center",
+						class: "col-span-full block mt-12 mx-auto sm:w-full uppercase max-w-xs p-4 xs:px-12 sm:px-6 md:px-8 xs:py-6 md:py-8 text-3xl dark:text-rose-100 font-bold bg-rose-100 hover:bg-rose-200 rounded-2xl dark:bg-denim-400 cursor-pointer text-center",
 						id: "load_more",						
-						"data-load-more": "#{load_more?(@filter_options.page, @total_pages)}"
+						"data-load-more": "#{load_more?(@filter_options.page, 500)}"
 
 				)
 	end %>

@@ -31,7 +31,7 @@ defmodule InBeautyWeb.LiveHelpers do
   def icon_tag(name, opts \\ []) do
     classes = Keyword.get(opts, :class, "")
 
-    Phoenix.HTML.Tag.content_tag :svg, opts do
+    Phoenix.HTML.Tag.content_tag :svg, [class: classes] ++ opts do
       Phoenix.HTML.Tag.tag(
         :use,
         "xlink:href": Routes.static_path(InBeautyWeb.Endpoint, "/icons/sprite.svg#" <> name)

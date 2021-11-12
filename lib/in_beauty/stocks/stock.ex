@@ -4,7 +4,7 @@ defmodule InBeauty.Stocks.Stock do
 
   alias InBeauty.Catalogue.Perfume
 
-  @fields ~w(image_path price quantity volume weight)a
+  @fields ~w(image_path price quantity volume weight perfume_id)a
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
 

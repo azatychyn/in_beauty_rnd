@@ -29,21 +29,31 @@ defmodule InBeauty.Catalogue do
 
   ## Examples
 
-      iex> list_perfumes()
-      [%Perfume{}, ...]
+      iex> list_perfumes(%{gender: [male], })
+      %%Scrivener.Page{entries: [%Perfume{}, ...], page_number: _, page_size: _, total_entries: _, total_pages: _}
 
   """
+  @spec list_perfumes(map()) :: Integer.t()
   def list_perfumes(params) when is_map(params) do
-    Perfume
-    |> join(:left, [p], s in Stock, on: s.perfume_id == p.id)
-    |> preload([p, s], stocks: s)
-    |> filter_genders(params)
-    |> filter_manufacturers(params)
-    |> sort(params)
-    |> filter_price(params)
-    |> filter_volumes(params)
-    |> distinct([p, s], p.id)
+    params
+    |> base_query()
     |> Repo.paginate(params)
+  end
+
+  @doc """
+  Returns the count of filtered list of perfumes.
+
+  ## Examples
+
+      iex> count_perfumes(%{gender: [male], })
+      %%Scrivener.Page{entries: [%Perfume{}, ...], page_number: _, page_size: _, total_entries: _, total_pages: _}
+
+  """
+  @spec count_perfumes(map()) :: Integer.t()
+  def count_perfumes(params) when is_map(params) do
+    params
+    |> base_query()
+    |> Repo.aggregate(:count, :id)
   end
 
   @doc """
@@ -148,6 +158,17 @@ defmodule InBeauty.Catalogue do
     |> Repo.all()
   end
 
+  defp base_query(params) do
+    Perfume
+    |> join(:left, [p], s in Stock, on: s.perfume_id == p.id)
+    |> preload([p, s], stocks: s)
+    |> filter_genders(params)
+    |> filter_manufacturers(params)
+    |> filter_price(params)
+    |> filter_volumes(params)
+    |> distinct([p, s], p.id)
+  end
+
   defp filter_volumes(query, %{volumes: volumes})
        when volumes not in [[""], [], ""] do
     volumes =
@@ -184,9 +205,4 @@ defmodule InBeauty.Catalogue do
        do: where(query, [q], q.manufacturer in ^manufacturers)
 
   defp filter_manufacturers(query, _), do: query
-
-  defp sort(query, %{sort: %{sort_by: sort_by, sort_order: sort_order}}),
-    do: order_by(query, [{^sort_order, ^sort_by}])
-
-  defp sort(query, _), do: query
 end

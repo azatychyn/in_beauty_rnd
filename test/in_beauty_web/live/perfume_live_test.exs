@@ -19,8 +19,8 @@ defmodule InBeautyWeb.PerfumeLiveTest do
   }
   @invalid_attrs %{description: nil, gender: nil, manufacturer: nil, name: nil}
 
-  setup_all do
-    {ok, [perfume: insert(:perfume)]}
+  setup do
+    {:ok, %{perfume: insert(:perfume)}}
   end
 
   describe "Index" do
@@ -47,7 +47,7 @@ defmodule InBeautyWeb.PerfumeLiveTest do
                show_live
                |> element("a", "Edit")
                |> render_click()
-               |> follow_redirect(conn, Routes.perfume_show_path(conn, :show, perfume))
+               |> follow_redirect(conn, Routes.perfume_show_path(conn, :edit, perfume))
 
       assert_patch(show_live, Routes.perfume_show_path(conn, :edit, perfume))
 

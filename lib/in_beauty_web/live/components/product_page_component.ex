@@ -1,6 +1,5 @@
 defmodule InBeautyWeb.ProductPageComponent do
   use Phoenix.Component
-  alias InBeautyWeb.Router.Helpers, as: Routes
 
   @doc """
   Renders a product page.
@@ -14,8 +13,7 @@ defmodule InBeautyWeb.ProductPageComponent do
   """
   def render_page(assigns) do
     ~H"""
-    <div
-      id={@page}      
+    <div           
       class="
         grid
         grid-cols-2
@@ -29,18 +27,16 @@ defmodule InBeautyWeb.ProductPageComponent do
         mt-8
         xl:mt-16
       "
-      >
-      <%= if @product do %>				        
-        <%= if !@product[:loading?] do %>
-          <%= for perfume <- @product.perfumes do %>
-            <InBeautyWeb.ProductCardComponent.loaded_product product={perfume} />                       
+      >           
+        <%= if @page != [] do %>
+          <%= for product <- @page do %>          
+            <InBeautyWeb.ProductCardComponent.loaded_product product={product} />
           <% end %>
         <% else %>            
-          <%= for i <- 1..@page_size do %>        
-            <InBeautyWeb.ProductCardComponent.unloaded_product />          
+          <%= for _i <- 1..@page_size do %>        
+            <InBeautyWeb.ProductCardComponent.unloaded_product />
           <% end %>
         <% end %>                
-      <% end %>
     </div>
     """
   end
