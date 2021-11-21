@@ -2,18 +2,20 @@ defmodule InBeautyWeb.Forms.ProductFilterFormComponent do
   use InBeautyWeb, :live_component
   alias InBeauty.Catalogue
   @impl Phoenix.LiveComponent
-  def mount(socket) do    
-    {:ok, assign(socket, :all_selected_filteres, [])}
+  def mount(socket) do
+    {:ok,
+     assign(socket, :all_selected_filteres, [])
+     |> assign(:filter_changeset, InBeauty.Catalogue.change_filter(%InBeauty.Catalogue.Filter{}))}
   end
 
   @impl Phoenix.LiveComponent
   def render(assigns) do
     ~H"""
-      <form phx-change="filter" phx-target={@myself} class="bg-gray-100 bg-opacity-40 rounded-2xl p-10 p-8">
-        <input type="hidden" name="page_size" value={ @filter_options.page_size }>
-        <input type="hidden" name="page" value={ @filter_options.page }>
-        
-        <section class="grid grid-cols-1 rounded-2xl mt-4 text-midnight-500 dark:text-rose-100">
+    <div class="bg-white rounded-2xl" id="modal">
+      <form phx-change="filter" phx-target={@myself} class="bg-opacity-80 rounded-2xl xl:p-10">
+        <input type="hidden" name="page_size" value={ @filter_options["page_size"] }>
+        <input type="hidden" name="page" value={ @filter_options["page"] }>
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 rounded-2xl mt-4 text-midnight-500 dark:text-rose-100">
           <%= if @device == "mobile" do %>
             <InBeautyWeb.MultiSelectComponent.mobile     
               variants={@volumes_variants}, #TODO do list with enums for ecto
@@ -67,10 +69,12 @@ defmodule InBeautyWeb.Forms.ProductFilterFormComponent do
             />
           <% end %>                        
         </section>
+      </form>
 
-        <ul class="mt-6">
+      <div class="bg-gray-100 bg-opacity-40 rounded-2xl xl:p-10">
+        <ul class="mt-2">
           <%= for {filter_group, selected_filter} <- all_selected_filters(@filter_options) do %>			
-            <li class="inline-flex items-center justify-center p-6 bg-gradient-to-r from-rose-100 to-rose-200 dark:border-rose-300 rounded-2xl text-xl text-center whitespace-nowrap cursor-pointer">
+            <li class="inline-flex items-center justify-center p-6 m-1 bg-gradient-to-r from-rose-100 to-rose-200 dark:border-rose-300 rounded-2xl text-xl text-center whitespace-nowrap cursor-pointer">
               <p class="">
                 <%= selected_filter %>
               </p>
@@ -103,67 +107,48 @@ defmodule InBeautyWeb.Forms.ProductFilterFormComponent do
                 to: Routes.perfume_index_path(@socket, :index, @filter_options),
                 class: "block sm:w-auto uppercase p-4 xs:px-12 sm:px-6 md:px-8 xs:py-6 md:py-8 text-3xl dark:text-rose-100 font-bold bg-rose-100 hover:bg-rose-200 dark:bg-denim-500 dark:hover:bg-denim-400 rounded-2xl cursor-pointer text-center mt-16"
               ) %>        
-      </form>
+      </div>
+    </div>
     """
   end
 
   @impl Phoenix.LiveComponent
   def handle_event("filter", params, socket) do
-    filter_options = %{
-      page: params["page"],
-      page_size: params["page_size"] || "1",
-      genders: Enum.uniq(params["genders"]) || [],
-      volumes: Enum.uniq(params["volumes"]) || [],
-      manufacturers: Enum.uniq(params["manufacturers"]) || [],
-      price: params["price"] || ["0", "10000"]
-    }
+    filter_changeset = InBeauty.Catalogue.change_filter(%InBeauty.Catalogue.Filter{}, params)
 
-    {
-      :noreply,      
-      push_patch(socket,
-        to: Routes.perfume_index_path(socket, :filters, filter_options),
-        replace: true
-      )
-    }
+    filter_options =
+      filter_changeset
+      |> Ecto.Changeset.apply_changes()
+      |> Map.from_struct()
+      |> Map.delete(:__meta__)
+
+    merge_assigns(socket, filter_changeset, filter_options)
   end
 
   def handle_event("reset_filters", _, socket) do
-    filter_options = %{
-      genders: [],
-      volumes: [],
-      manufacturers: [],
-      price: ["0", "10000"]
-    }
+    filter_options =
+      %InBeauty.Catalogue.Filter{}
+      |> Map.from_struct()
+      |> Map.delete(:__meta__)
 
-    {:noreply,
-     push_patch(socket,
-       to: Routes.perfume_index_path(socket, :filters, filter_options),
-       replace: true
-     )}
+    {:noreply, assign(socket, :filter_options, filter_options)}
   end
 
   def handle_event("remove_filter", %{"filter_group" => filter_group, "filter" => filter}, socket) do
     filter_group = String.to_existing_atom(filter_group)
 
     filter_options =
-      socket.assigns.filter_options
-      |> update_in([filter_group], &List.delete(&1, filter))
+      update_in(socket.assigns.filter_options, [filter_group], &List.delete(&1, filter))
 
-    {:noreply,
-     push_patch(socket,
-       to: Routes.perfume_index_path(socket, :filters, filter_options),
-       replace: true
-     )}
+    filter_changeset =
+      InBeauty.Catalogue.change_filter(%InBeauty.Catalogue.Filter{}, filter_options)
+
+    merge_assigns(socket, filter_changeset, filter_options)
   end
 
   def handle_event("price_change", [price_min, price_max], socket) do
     filter_options = Map.put(socket.assigns.filter_options, :price, [price_min, price_max])
-
-    {:noreply,
-     push_patch(socket,
-       to: Routes.perfume_index_path(socket, :filters, filter_options),
-       replace: true
-     )}
+    {:noreply, assign(socket, :filter_options, filter_options)}
   end
 
   defp all_selected_filters(filter_options) do
@@ -175,5 +160,13 @@ defmodule InBeautyWeb.Forms.ProductFilterFormComponent do
       |> Enum.map(fn filter -> {filter_group, filter} end)
       |> then(&(&1 ++ acc))
     end)
+  end
+
+  defp merge_assigns(socket, filter_changeset, filter_options) do
+    {:noreply,
+     socket
+     |> assign(:filter_changeset, filter_changeset)
+     |> assign(:filter_options, filter_options)
+     |> assign(:perfumes_count, Catalogue.count_perfumes(filter_options))}
   end
 end

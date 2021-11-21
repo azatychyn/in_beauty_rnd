@@ -11,7 +11,8 @@ defmodule InBeautyWeb.PerfumeLive.Index do
   @genders_variants ["men", "women", "unisex"]
   @pages_variants ["20", "40"]
   @default_page_size 5
-  @volumes_variants ["30", "40", "50", "100", "200"]
+  @volumes_variants ["30", "40", "50", "100", "200", "300", "400"]
+  @manufacturers_variants ["some manufactorer"]
   @default_pages List.duplicate([], 10)
 
   @impl true
@@ -29,7 +30,7 @@ defmodule InBeautyWeb.PerfumeLive.Index do
       |> assign(:perfumes_count, 0)
       |> assign(:volumes_variants, @volumes_variants)
       |> assign(:genders_variants, @genders_variants)
-      |> assign(:manufacturers_variants, [])
+      |> assign(:manufacturers_variants, @manufacturers_variants)
       |> assign(:pages_variants, @pages_variants)
       |> assign(:page_title, "Listing Perfumess")
       |> assign(:return_path, :perfume_index_path)
@@ -54,23 +55,6 @@ defmodule InBeautyWeb.PerfumeLive.Index do
     end
 
     update(socket, :pages, fn prev_pages -> prev_pages ++ [[]] end)
-  end
-
-  defp apply_action(socket, :filters, _params) do
-    IO.inspect("i am in handle filters")
-    filter_options = socket.assigns.filter_options
-    perfumes_count = Catalogue.count_perfumes(filter_options)
-
-    perfumes = %{
-      entries: [],
-      page_size: filter_options.page_size,
-      page_number: filter_options.page,
-      total_pages: 1
-    }
-
-    socket
-    |> assign(:perfumes_count, perfumes_count)
-    |> assign(:total_pages, perfumes.total_pages)
   end
 
   @impl Phoenix.LiveView
@@ -99,6 +83,7 @@ defmodule InBeautyWeb.PerfumeLive.Index do
       socket
       |> assign(:total_pages, pages.total_pages)
       |> update(:pages, fn prev_pages -> List.replace_at(prev_pages, -1, pages.entries) end)
+      |> assign(:perfumes_count, pages.total_pages * pages.page_size)
 
     {:noreply, socket}
   end
@@ -170,6 +155,7 @@ defmodule InBeautyWeb.PerfumeLive.Index do
     js
     |> JS.show(transition: "fade-out", to: "#" <> id)
     |> JS.show(transition: "fade-out-scale", to: "#modal-content")
+    |> JS.add_class("overflow-hidden", to: "#body")
   end
 
   defp check_page(nil), do: 1
@@ -190,4 +176,10 @@ defmodule InBeautyWeb.PerfumeLive.Index do
   defp page_size_guard(page_size) when page_size > 5, do: page_size
 
   defp page_size_guard(_), do: @default_page_size
+
+  defp filter_options_map(filter_options) do
+    InBeauty.Catalogue.Filter
+    |> struct(filter_options)
+    |> Map.take(InBeauty.Catalogue.Filter.__schema__(:fields))
+  end
 end

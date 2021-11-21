@@ -6,7 +6,7 @@ defmodule InBeauty.Catalogue do
   import Ecto.Query, warn: false
   alias InBeauty.Repo
 
-  alias InBeauty.Catalogue.Perfume
+  alias InBeauty.Catalogue.{Filter, Perfume}
   alias InBeauty.Stocks.Stock
 
   @doc """
@@ -143,6 +143,19 @@ defmodule InBeauty.Catalogue do
   end
 
   @doc """
+  Returns an `%Ecto.Changeset{}` for tracking filter changes.
+
+  ## Examples
+
+      iex> change_filter(filter)
+      %Ecto.Changeset{data: %Filter{}}
+
+  """
+  def change_filter(%Filter{} = filter, attrs \\ %{}) do
+    Filter.changeset(filter, attrs)
+  end
+
+  @doc """
   Returns the list of manufacturers with filtering.
 
   ## Examples
@@ -171,11 +184,6 @@ defmodule InBeauty.Catalogue do
 
   defp filter_volumes(query, %{volumes: volumes})
        when volumes not in [[""], [], ""] do
-    volumes =
-      volumes
-      |> Enum.filter(&(&1 != ""))
-      |> Enum.map(&String.to_integer/1)
-
     where(query, [p, s], s.volume in ^volumes)
   end
 

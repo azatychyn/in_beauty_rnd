@@ -2,13 +2,11 @@
 	<%= live_component InBeautyWeb.Forms.ProductFilterFormComponent,
 			[
 				id: :filters,
-				filter_options: %{@filter_options | page: 1},
+				filter_options: filter_options_map(@filter_options),
 				perfumes_count: @perfumes_count,
 				genders_variants: @genders_variants,
 				volumes_variants: @volumes_variants,
 				manufacturers_variants: @manufacturers_variants,
-				return_to: Routes.perfume_index_path(@socket, :index, @filter_options),
-				return_path: @return_path,
 				device: :desktop
 			]
 	%>

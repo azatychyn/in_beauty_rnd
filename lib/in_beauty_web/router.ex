@@ -93,7 +93,6 @@ defmodule InBeautyWeb.Router do
     scope "/", InBeautyWeb do
       pipe_through [:browser]
       live "/perfumes", PerfumeLive.Index, :index
-      live "/perfumes/filters", PerfumeLive.Index, :filters
       live "/perfumes/:id", PerfumeLive.Show, :show
     end
   end
