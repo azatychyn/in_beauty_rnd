@@ -76,6 +76,7 @@ defmodule InBeauty.Deliveries.Delivery do
     |> cast(attrs, @fields)
     |> apply_changes()
     |> cast(attrs, @fields)
+    # |> foreign_key_constraint(:order_id)    
     |> validate_private_house()
     |> validate_required([:date])
     |> put_embed(:delivery_point, delivery_point)
@@ -88,6 +89,7 @@ defmodule InBeauty.Deliveries.Delivery do
     |> cast(attrs, @fields)
     |> apply_changes()
     |> cast(attrs, @fields)
+    |> foreign_key_constraint(:order_id)
     |> validate_private_house()
     |> validate_required([:date, :delivery_type])
     |> put_embed(:delivery_point, delivery_point)
@@ -180,7 +182,7 @@ defmodule InBeauty.Deliveries.Delivery do
     |> validate_required([:delivery_point], message: "Выберите пункт самовывоза")
   end
 
-  defp validate_by_delivery_type(changeset, delivery_type) do
+  defp validate_by_delivery_type(changeset, _delivery_type) do
     changeset
     |> validate_required([:delivery_type], message: "Выберите способ доставки")
   end

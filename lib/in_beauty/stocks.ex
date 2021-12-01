@@ -6,7 +6,9 @@ defmodule InBeauty.Stocks do
   import Ecto.Query, warn: false
   alias InBeauty.Repo
 
-  alias InBeauty.Stocks.Stock
+  alias InBeauty.Stocks.{ReservedStock, Stock}
+
+  @topic inspect(__MODULE__)
 
   @doc """
   Returns the list of stocks.
@@ -117,4 +119,112 @@ defmodule InBeauty.Stocks do
     |> select([s], s.volume)
     |> Repo.all()
   end
+
+  @doc """
+  Returns the list of reserved_stocks.
+
+  ## Examples
+
+      iex> list_reserved_stocks()
+      [%ReservedStock{}, ...]
+
+  """
+  def list_reserved_stocks do
+    Repo.all(ReservedStock)
+  end
+
+  @doc """
+  Gets a single reserved_stock.
+
+  Raises `Ecto.NoResultsError` if the ReservedStock does not exist.
+
+  ## Examples
+
+      iex> get_reserved_stock!(123)
+      %ReservedStock{}
+
+      iex> get_reserved_stock!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_reserved_stock!(id), do: Repo.get!(ReservedStock, id)
+
+  @doc """
+  Creates a reserved_stock.
+
+  ## Examples
+
+      iex> create_reserved_stock(%{field: value})
+      {:ok, %ReservedStock{}}
+
+      iex> create_reserved_stock(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_reserved_stock(attrs \\ %{}) do
+    %ReservedStock{}
+    |> ReservedStock.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a reserved_stock.
+
+  ## Examples
+
+      iex> update_reserved_stock(reserved_stock, %{field: new_value})
+      {:ok, %ReservedStock{}}
+
+      iex> update_reserved_stock(reserved_stock, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_reserved_stock(%ReservedStock{} = reserved_stock, attrs) do
+    reserved_stock
+    |> ReservedStock.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a reserved_stock.
+
+  ## Examples
+
+      iex> delete_reserved_stock(reserved_stock)
+      {:ok, %ReservedStock{}}
+
+      iex> delete_reserved_stock(reserved_stock)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_reserved_stock(%ReservedStock{} = reserved_stock) do
+    Repo.delete(reserved_stock)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking reserved_stock changes.
+
+  ## Examples
+
+      iex> change_reserved_stock(reserved_stock)
+      %Ecto.Changeset{data: %ReservedStock{}}
+
+  """
+  def change_reserved_stock(%ReservedStock{} = reserved_stock, attrs \\ %{}) do
+    ReservedStock.changeset(reserved_stock, attrs)
+  end
+
+  def notify_subscribers({:ok, result}, event) do
+    Phoenix.PubSub.broadcast(InBeauty.PubSub, @topic, {__MODULE__, event, result})
+
+    Phoenix.PubSub.broadcast(
+      InBeauty.PubSub,
+      @topic <> "#{result.id}",
+      {__MODULE__, event, result}
+    )
+
+    {:ok, result}
+  end
+
+  def notify_subscribers({:error, reason}, _event), do: {:error, reason}
 end

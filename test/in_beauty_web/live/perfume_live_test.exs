@@ -28,7 +28,7 @@ defmodule InBeautyWeb.PerfumeLiveTest do
       {:ok, _index_live, html} = live(conn, Routes.perfume_index_path(conn, :index))
 
       assert html =~ "Listing Perfumes"
-      assert html =~ "page_1"
+      # assert html =~ "page_1"
     end
   end
 

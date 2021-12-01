@@ -3,7 +3,7 @@ defmodule InBeauty.Repo.Migrations.CreateOrdersTable do
 
   def change do
     execute("CREATE EXTENSION IF NOT EXISTS citext", "")
-
+    # TODO status order create_query = "CREATE TYPE status AS ENUM (statuses)"
     create table(:orders, primary_key: false) do
       add :id, :binary_id, primary_key: true
       add :first_name, :string, null: false

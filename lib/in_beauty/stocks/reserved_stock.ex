@@ -26,6 +26,9 @@ defmodule InBeauty.Stocks.ReservedStock do
   def changeset(stock, attrs) do
     stock
     |> cast(attrs, __MODULE__.__schema__(:fields))
+    |> unique_constraint([:order_id, :stock_id, :volume])
+    |> foreign_key_constraint(:stock_id)
+    |> foreign_key_constraint(:order_id)
     # TODO add all fields to validate
     |> validate_required(@fields)
   end

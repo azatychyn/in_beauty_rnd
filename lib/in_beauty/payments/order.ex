@@ -1,39 +1,38 @@
-defmodule InBeauty.Accounts.Order do
+defmodule InBeauty.Payments.Order do
   use Ecto.Schema
 
   import Ecto.Changeset
   alias InBeauty.Accounts.User
-  alias InBeauty.Repo
   alias InBeauty.Relations.StockOrder
-  alias InBeauty.Catalogue.Stock
+  alias InBeauty.Stocks.Stock
   alias InBeauty.Deliveries.Delivery
-  alias InBeauty.Catalogue.ReservedStock
+  alias InBeauty.Stocks.ReservedStock
 
   @fields ~w(first_name last_name paid status product_price total_price discount)a
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
-
+  # TODO to mention all non null value fields from migrations
   schema "orders" do
     field :comment, :string
+    field :discount, :float, default: 0.0
     field :email, :string
     field :first_name, :string
     field :last_name, :string
     field :patronymic, :string
     field :phone_number, :string
     field :paid, :boolean, default: false
-    field :total_price, :float
+    field :product_price, :float, default: 0.0
     field :status, :string
-    field :product_price, :float
-    field :discount, :float, default: 0.0
+    field :total_price, :float, default: 0.0
 
     belongs_to :user, User
 
-    has_one :delivery, Delivery, on_replace: :delete, on_delete: :delete_all
+    has_one :delivery, Delivery, on_delete: :delete_all
 
-    has_many :stocks_orders, StockOrder, on_replace: :delete
-    has_many :reserved_stocks, ReservedStock, on_replace: :delete
+    has_many :stocks_orders, StockOrder, on_delete: :delete_all
+    has_many :reserved_stocks, ReservedStock, on_delete: :delete_all
 
-    many_to_many :stocks, Stock, join_through: "stocks_orders", on_replace: :delete
+    many_to_many :stocks, Stock, join_through: "stocks_orders", on_delete: :delete_all
 
     timestamps()
   end
@@ -76,7 +75,7 @@ defmodule InBeauty.Accounts.Order do
   #   cast_assoc(changeset, :stocks_orders)
   # defp maybe_cast_stocks_orders(changeset, _), do:
   #   changeset
-  defp maybe_cast_reserved_stocks_orders(changeset, %{"reserved_stocks" => reserved_stocks}),
+  defp maybe_cast_reserved_stocks_orders(changeset, %{"reserved_stocks" => _reserved_stocks}),
     do: cast_assoc(changeset, :reserved_stocks)
 
   defp maybe_cast_reserved_stocks_orders(changeset, _), do: changeset

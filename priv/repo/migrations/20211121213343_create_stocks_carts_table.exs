@@ -11,7 +11,7 @@ defmodule InBeauty.Repo.Migrations.CreateStocksCartsTable do
       add :stock_id, references(:stocks, type: :binary_id, on_delete: :delete_all), null: false
     end
 
-    create_if_not_exists unique_index(:stocks_carts, [:cart_id, :stock_id, :quantity, :volume])
+    # create_if_not_exists unique_index(:stocks_carts, [:cart_id, :stock_id, :quantity, :volume])
     create_if_not_exists unique_index(:stocks_carts, [:cart_id, :stock_id, :volume])
   end
 end
