@@ -14,5 +14,7 @@ defmodule InBeauty.Repo.Migrations.CreateStocks do
 
       timestamps()
     end
+
+    create_if_not_exists unique_index(:stocks, [:volume, :perfume_id])
   end
 end

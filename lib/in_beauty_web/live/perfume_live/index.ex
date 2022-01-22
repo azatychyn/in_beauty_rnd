@@ -1,12 +1,11 @@
 defmodule InBeautyWeb.PerfumeLive.Index do
   use InBeautyWeb, :live_view
-  # import Ecto.Query, only: [from: 2]
+
   import InBeautyWeb.LiveHelpers, only: [icon_tag: 2]
+
   alias InBeauty.Catalogue
-  # alias InBeauty.Catalogue.Perfume
   alias InBeauty.Stocks
   alias Phoenix.LiveView.JS
-  # alias InBeauty.Repo
 
   @genders_variants ["men", "women", "unisex"]
   @pages_variants ["20", "40"]

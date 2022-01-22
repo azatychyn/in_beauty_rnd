@@ -26,6 +26,7 @@ defmodule InBeauty.Stocks.Stock do
     stock
     |> cast(attrs, @fields)
     |> validate_required(@fields)
+    |> unique_constraint([:volume, :perfume_id])
     |> foreign_key_constraint(:perfume_id)
     |> maybe_mark_for_deletion()
   end

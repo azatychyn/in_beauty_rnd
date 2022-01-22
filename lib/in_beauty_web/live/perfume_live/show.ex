@@ -1,218 +1,237 @@
-# defmodule InBeautyWeb.PerfumeLive.Show do
-#   use InBeautyWeb, :live_view
-#   # use InBeautyWeb.LocaleEventHandler
+defmodule InBeautyWeb.PerfumeLive.Show do
+  use InBeautyWeb, :live_view
+  # use InBeautyWeb.LocaleEventHandler
 
-#   alias InBeauty.Catalogue
-#   alias InBeauty.Relations
-#   alias InBeautyWeb.Forms.PerfumeImageComponent
-#   # alias InBeauty.Catalogue.{Perfume, Stock, Review}
-#   # alias InBeautyWeb.Forms.PerfumeFormComponent
-#   # alias InBeautyWeb.InputComponent
-#   # alias InBeauty.Repo
+  alias InBeauty.Catalogue
+  alias InBeauty.Relations
+  alias InBeautyWeb.Forms.PerfumeImageComponent
+  alias InBeauty.Catalogue.{Perfume, Review}
+  alias InBeauty.Relations.StockCart
+  alias InBeauty.Stocks.Stock
+  alias InBeauty.Stocks
+  # alias InBeautyWeb.Forms.PerfumeFormComponent
+  # alias InBeautyWeb.InputComponent
+  # alias InBeauty.Repo
 
-#   @impl true
-#   def mount(_params, session, socket) do    
-#     socket = 
-#       socket            
-#       |> assign(:device, "desktop")            
-#     {:ok, socket}    
-#   end
+  @impl true
+  def mount(_params, session, socket) do
+    IO.inspect(socket.assigns)
 
-#   @impl true
-#   def handle_params(%{"id" => id} = params, _url, socket) do
-#     perfume = Catalogue.get_perfume!(id)
-#     stock = List.first(perfume.stocks)
-#     # cart_id = socket.assigns.current_cart.id
+    socket =
+      socket
+      |> assign(:device, "desktop")
+      |> assign(:locale, "ru")
 
-#     stock_cart =
-#       Relations.get_stock_cart_by(stock_id: stock.id, cart_id: cart_id, volume: stock.volume)
+    {:ok, socket}
+  end
 
-#     favorite = favorite_perfume?(perfume.carts_perfumes, perfume.id)
+  @impl true
+  def handle_params(%{"id" => id} = params, _url, socket) do
+    perfume = Catalogue.get_perfume!(id)
+    stock = List.first(perfume.stocks)
 
-#     if connected?(socket), do: Catalogue.subscribe(perfume.id)
+    stock_cart =
+      if connected?(socket) do
+        cart_id = socket.assigns.current_cart.id
 
-#     socket
-#     |> assign(:page_title, "Perfume - #{perfume.name}")
-#     |> assign(:perfume, perfume)
-#     |> assign(:selected_stock, stock)
-#     |> assign(:stock_cart, stock_cart)
-#     |> assign(:quantity, @stock_cart["quantity"] || 1)
-#     |> assign(:favorite, favorite)
-#     |> apply_action(socket.assigns.live_action, params)
-#   end
+        stock_cart =
+          Relations.get_stock_cart_by(stock_id: stock.id, cart_id: cart_id, volume: stock.volume)
+      else
+        nil
+      end
 
-#   defp apply_action(socket, :show, params) do
-#     {:noreply, socket}
-#   end
+    # favorite = favorite_perfume?(perfume.carts_perfumes, perfume.id)
 
-#   def handle_event("select_stock", %{"id" => id}, socket) do
-#     stock = Enum.find(socket.assigns.perfume.stocks, &(&1.id == id))
-#     cart_id = socket.assigns.current_cart.id
+    # if connected?(socket), do: Catalogue.subscribe(perfume.id)
 
-#     stock_cart =
-#       Relations.get_stock_cart_by(stock_id: stock.id, cart_id: cart_id, volume: stock.volume)
+    socket
+    |> assign(:page_title, "Perfume - #{perfume.name}")
+    |> assign(:perfume, perfume)
+    |> assign(:selected_stock, stock)
+    |> assign(:stock_cart, stock_cart)
+    |> assign(:quantity, @stock_cart["quantity"] || 1)
+    |> assign(:favorite, false)
+    |> apply_action(socket.assigns.live_action, params)
+  end
 
-#     socket =
-#       socket
-#       |> assign(:selected_stock, stock)
-#       |> assign(:stock_cart, stock_cart)
-#       |> assign(:quantity, @stock_cart["quantity"] || 1)
+  defp apply_action(socket, :show, params) do
+    {:noreply, socket}
+  end
 
-#     {:noreply, socket}
-#   end
+  def handle_event("select_stock", %{"id" => id}, socket) do
+    stock = Enum.find(socket.assigns.perfume.stocks, &(&1.id == id))
+    cart_id = socket.assigns.current_cart.id
 
-#   def handle_event("add_to_cart", _, socket) do
-#     cart_id = socket.assigns.current_cart.id
-#     # this will reise error if stock not in database
-#     stock = Catalogue.get_stock!(socket.assigns.selected_stock.id)
-#     locale = socket.assigns.locale
+    stock_cart =
+      Relations.get_stock_cart_by(stock_id: stock.id, cart_id: cart_id, volume: stock.volume)
 
-#     stock_cart_params = %{
-#       cart_id: cart_id,
-#       stock_id: stock.id,
-#       volume: stock.volume,
-#       quantity: 1
-#     }
+    socket =
+      socket
+      |> assign(:selected_stock, stock)
+      |> assign(:stock_cart, stock_cart)
+      |> assign(:quantity, @stock_cart["quantity"] || 1)
 
-#     case 1 <= stock.quantity do
-#       true ->
-#         # this will reise error if stock_cart haven't been created
-#         # TODO may be do second step to show what error in there maybe already in cart of message to reload the page
-#         {:ok, stock_cart} = Relations.create_stock_cart(stock_cart_params)
+    {:noreply, socket}
+  end
 
-#         message =
-#           Gettext.with_locale(locale, fn ->
-#             gettext("Perfume added to cart")
-#           end)
+  def handle_event("add_to_cart", _, socket) do
+    cart_id = socket.assigns.current_cart.id
+    # this will reise error if stock not in database
+    stock = Stocks.get_stock!(socket.assigns.selected_stock.id)
+    locale = socket.assigns.locale
 
-#         socket =
-#           socket
-#           |> assign(:stock_cart, stock_cart)
-#           |> put_flash(:info, message)
+    stock_cart_params = %{
+      cart_id: cart_id,
+      stock_id: stock.id,
+      volume: stock.volume,
+      quantity: 1
+    }
 
-#         {:noreply, socket}
+    case 1 <= stock.quantity do
+      true ->
+        # this will reise error if stock_cart haven't been created
+        # TODO may be do second step to show what error in there maybe already in cart of message to reload the page
+        {:ok, stock_cart} = Relations.create_stock_cart(stock_cart_params)
 
-#       false ->
-#         message =
-#           Gettext.with_locale(locale, fn ->
-#             gettext("There are only %{quantity} in stock", quantity: stock.quantity)
-#           end)
+        message =
+          Gettext.with_locale(locale, fn ->
+            gettext("Perfume added to cart")
+          end)
 
-#         socket =
-#           socket
-#           |> put_flash(:error, message)
+        socket =
+          socket
+          |> assign(:stock_cart, stock_cart)
+          |> put_flash(:info, message)
 
-#         {:noreply, socket}
-#     end
-#   end
+        {:noreply, socket}
 
-#   def handle_event("add_more", _, socket) do
-#     stock = Catalogue.get_stock!(socket.assigns.selected_stock.id)
-#     # TODO May be not to fetcj or to update its valuse in one query
-#     # this will reise error if can't fetch
-#     stock_cart = Relations.get_stock_cart!(socket.assigns.stock_cart.id)
-#     locale = socket.assigns.locale
+      false ->
+        message =
+          Gettext.with_locale(locale, fn ->
+            gettext("There are only %{quantity} in stock", quantity: stock.quantity)
+          end)
 
-#     case stock_cart.quantity < stock.quantity do
-#       true ->
-#         {:ok, updated_stock_cart} =
-#           Relations.update_stock_cart(stock_cart, %{quantity: stock_cart.quantity + 1})
+        socket =
+          socket
+          |> put_flash(:error, message)
 
-#         message =
-#           Gettext.with_locale(locale, fn ->
-#             gettext("Perfume added to cart")
-#           end)
+        {:noreply, socket}
+    end
+  end
 
-#         socket =
-#           socket
-#           |> assign(:stock_cart, updated_stock_cart)
-#           |> put_flash(:info, message)
+  def handle_event("add_more", _, socket) do
+    stock = Stocks.get_stock!(socket.assigns.selected_stock.id)
+    # TODO May be not to fetcj or to update its valuse in one query
+    # this will reise error if can't fetch
+    stock_cart = Relations.get_stock_cart!(socket.assigns.stock_cart.id)
+    locale = socket.assigns.locale
 
-#         {:noreply, socket}
+    case stock_cart.quantity < stock.quantity do
+      true ->
+        {:ok, updated_stock_cart} =
+          Relations.update_stock_cart(stock_cart, %{quantity: stock_cart.quantity + 1})
 
-#       false ->
-#         message =
-#           Gettext.with_locale(locale, fn ->
-#             gettext("There are only %{quantity} in stock", quantity: stock.quantity)
-#           end)
+        message =
+          Gettext.with_locale(locale, fn ->
+            gettext("Perfume added to cart")
+          end)
 
-#         socket =
-#           socket
-#           |> put_flash(:error, message)
+        socket =
+          socket
+          |> assign(:stock_cart, updated_stock_cart)
+          |> put_flash(:info, message)
 
-#         {:noreply, socket}
-#     end
-#   end
+        {:noreply, socket}
 
-#   def handle_event("add_to_favorite", _, socket) do
-#     perfume = socket.assigns.perfume
-#     cart_id = socket.assigns.current_cart.id
-#     locale = socket.assigns.locale
+      false ->
+        message =
+          Gettext.with_locale(locale, fn ->
+            gettext("There are only %{quantity} in stock", quantity: stock.quantity)
+          end)
 
-#     case favorite_perfume?(perfume.carts_perfumes, perfume.id) do
-#       false ->
-#         {:ok, favorite_perfume} =
-#           Relations.create_favorite_perfume(%{perfume_id: perfume.id, cart_id: cart_id})
+        socket =
+          socket
+          |> put_flash(:error, message)
 
-#         Catalogue.notify_subscribers({:ok, perfume}, [:perfume, :updated])
+        {:noreply, socket}
+    end
+  end
 
-#         message =
-#           Gettext.with_locale(locale, fn ->
-#             gettext("Perfume added to your favorites")
-#           end)
+  def handle_event("add_to_favorite", _, socket) do
+    perfume = socket.assigns.perfume
+    cart_id = socket.assigns.current_cart.id
+    locale = socket.assigns.locale
 
-#         socket =
-#           socket
-#           |> put_flash(:info, message)
+    case favorite_perfume?(perfume.carts_perfumes, perfume.id) do
+      false ->
+        {:ok, favorite_perfume} =
+          Relations.create_favorite_perfume(%{perfume_id: perfume.id, cart_id: cart_id})
 
-#         {:noreply, socket}
+        Catalogue.notify_subscribers({:ok, perfume}, [:perfume, :updated])
 
-#       false ->
-#         message =
-#           Gettext.with_locale(locale, fn ->
-#             gettext("Can't add %{name} to favorites", name: perfume.name)
-#           end)
+        message =
+          Gettext.with_locale(locale, fn ->
+            gettext("Perfume added to your favorites")
+          end)
 
-#         socket =
-#           socket
-#           |> put_flash(:error, message)
+        socket =
+          socket
+          |> put_flash(:info, message)
 
-#         {:noreply, socket}
-#     end
-#   end
+        {:noreply, socket}
 
-#   def handle_event("remove_from_favorite", _, socket) do
-#     perfume = socket.assigns.perfume
-#     cart_id = socket.assigns.current_cart.id
-#     locale = socket.assigns.locale
+      false ->
+        message =
+          Gettext.with_locale(locale, fn ->
+            gettext("Can't add %{name} to favorites", name: perfume.name)
+          end)
 
-#     [perfume_id: perfume.id, cart_id: cart_id]
-#     |> Relations.get_favorite_perfume_by!()
-#     |> Relations.delete_favorite_perfume()
+        socket =
+          socket
+          |> put_flash(:error, message)
 
-#     Catalogue.notify_subscribers({:ok, perfume}, [:perfume, :updated])
+        {:noreply, socket}
+    end
+  end
 
-#     message =
-#       Gettext.with_locale(locale, fn ->
-#         gettext("Perfume removed from your favorites")
-#       end)
+  def handle_event("remove_from_favorite", _, socket) do
+    perfume = socket.assigns.perfume
+    cart_id = socket.assigns.current_cart.id
+    locale = socket.assigns.locale
 
-#     {:noreply, put_flash(socket, :info, message)}
-#   end
+    [perfume_id: perfume.id, cart_id: cart_id]
+    |> Relations.get_favorite_perfume_by!()
+    |> Relations.delete_favorite_perfume()
 
-#   def handle_info({Catalogue, [:perfume, :updated], _}, socket) do
-#     perfume = Catalogue.get_perfume!(socket.assigns.perfume.id)
-#     favorite = favorite_perfume?(perfume.carts_perfumes, perfume.id)
+    Catalogue.notify_subscribers({:ok, perfume}, [:perfume, :updated])
 
-#     socket =
-#       socket
-#       |> assign(:perfume, perfume)
-#       |> assign(:favorite, favorite)
+    message =
+      Gettext.with_locale(locale, fn ->
+        gettext("Perfume removed from your favorites")
+      end)
 
-#     {:noreply, socket}
-#   end
+    {:noreply, put_flash(socket, :info, message)}
+  end
 
-#   defp favorite_perfume?(carts, perfume_id) do
-#     Enum.any?(carts, &(&1.perfume_id == perfume_id))
-#   end
-# end
+  def handle_info({Catalogue, [:perfume, :updated], _}, socket) do
+    perfume = Catalogue.get_perfume!(socket.assigns.perfume.id)
+    favorite = favorite_perfume?(perfume.carts_perfumes, perfume.id)
+
+    socket =
+      socket
+      |> assign(:perfume, perfume)
+      |> assign(:favorite, favorite)
+
+    {:noreply, socket}
+  end
+
+  defp favorite_perfume?(carts, perfume_id) do
+    Enum.any?(carts, &(&1.perfume_id == perfume_id))
+  end
+
+  defp add_to_cart_button_text(%StockCart{}, locale),
+    do: Gettext.with_locale(locale, fn -> gettext("add more") end)
+
+  defp add_to_cart_button_text(_, locale),
+    do: Gettext.with_locale(locale, fn -> gettext("add to cart") end)
+end

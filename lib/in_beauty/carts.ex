@@ -83,6 +83,23 @@ defmodule InBeauty.Carts do
   def get_cart!(id), do: Repo.get!(Cart, id)
 
   @doc """
+  Gets a single cart.
+
+  Return nil if the Cart does not exist.
+
+  ## Examples
+
+      iex> get_cart(123)
+      %Cart{}
+
+      iex> get_cart(456)
+      nil
+
+  """
+  @spec get_cart(String.t()) :: Cart.t() | nil
+  def get_cart(id), do: Repo.get(Cart, id)
+
+  @doc """
   Creates a cart.
 
   ## Examples

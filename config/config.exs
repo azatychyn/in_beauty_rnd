@@ -17,6 +17,10 @@ config :in_beauty, InBeautyWeb.Endpoint,
   pubsub_server: InBeauty.PubSub,
   live_view: [signing_salt: "HKcummgP"]
 
+config :in_beauty, InBeautyWeb.Gettext,
+  locales: ~w(ru en am),
+  default_locale: "ru"
+
 # Configures the mailer
 #
 # By default it uses the "Local" adapter which stores the emails

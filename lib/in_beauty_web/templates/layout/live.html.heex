@@ -1,4 +1,11 @@
-<main class="container mx-auto">
+<div class="block xs:hidden bg-red-200  h-6"> less than xs</div>
+<div class="hidden xs:block sm:hidden bg-red-300  h-6">xs</div>
+<div class="hidden sm:block md:hidden bg-red-400  h-6">sm</div>
+<div class="hidden md:block lg:hidden bg-red-500  h-6">md</div>
+<div class="hidden lg:block xl:hidden bg-red-600  h-6">lg</div>
+<div class="hidden xl:block 2xl:hidden bg-red-700  h-6">xl</div>
+<div class="hidden 2xl:block 3xl:hidden bg-red-800  h-6">2xl</div>
+<main>
   <p class="alert alert-info" role="alert"
     phx-click="lv:clear-flash"
     phx-value-key="info"><%= live_flash(@flash, :info) %></p>

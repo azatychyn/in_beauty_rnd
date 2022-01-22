@@ -11,6 +11,7 @@ defmodule InBeautyWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :fetch_current_user
+    plug InBeautyWeb.Plugs.SessionPlug
   end
 
   pipeline :api do
@@ -94,6 +95,7 @@ defmodule InBeautyWeb.Router do
       pipe_through [:browser]
       live "/perfumes", PerfumeLive.Index, :index
       live "/perfumes/:id", PerfumeLive.Show, :show
+      live "/perfumes/:id/image/:path", PerfumeLive.Image, :image
     end
   end
 
